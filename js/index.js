@@ -1,116 +1,36 @@
 const app = Vue.createApp({
     data() {
         return {
-            total_hits: 0,
             current_hit: 0,
             hits_data: {},
 
-            showCount: 4,
-            allResultsShown: false,
-
-            responseIsVisible: false,
-            responseToggleText: 'Thought process...',
-            searchableIsVisible: false,
-            searchableToggleText: 'Thought process...',
-            snippetIsVisible: false,
-            snippetToggleText: 'Thought process...',
-
-            googleQueryAnswer: null,
-            correctedQuery: null,
-            aiEstimation: null,
-            finalEstimation: null,
-            estConfidence: null,
-            referenceLinks: [],
-            nextLinkId: 0, // increment this each time you add a link
-            briefExplanation: '',
-
-            showCheckmark: false,
+            bookmarked: false,
+            importance: "",
+            question: "",
         }
     },
     methods: {
-        toggleContent(type) {
-            let isVisible, ref, toggleText;
-            switch (type) {
-                case 'response':
-                    this.responseIsVisible = !this.responseIsVisible;
-                    isVisible = this.responseIsVisible;
-                    ref = 'responseContentDiv';
-                    toggleText = 'responseToggleText';
-                    break;
-                case 'searchable':
-                    this.searchableIsVisible = !this.searchableIsVisible;
-                    isVisible = this.searchableIsVisible;
-                    ref = 'searchableContentDiv';
-                    toggleText = 'searchableToggleText';
-                    break;
-                case 'snippet':
-                    this.snippetIsVisible = !this.snippetIsVisible;
-                    isVisible = this.snippetIsVisible;
-                    ref = 'snippetContentDiv';
-                    toggleText = 'snippetToggleText';
-                    break;
+        bookmark_this_hit() {
+            if (!this.hits_data[this.current_hit].annotations) {
+                this.$set(this.hits_data[this.current_hit], 'annotations', {});
             }
-            this.toggle(isVisible, ref, toggleText);
+            const isBookmarked = this.hits_data[this.current_hit].annotations.bookmarked || false;
+            this.hits_data[this.current_hit].annotations.bookmarked = !isBookmarked;
         },
-        toggle(isVisible, ref, toggleText) {
-            const targetDiv = this.$refs[ref];
-            if (isVisible) {
-                $(targetDiv).slideDown();
-                this[toggleText] = 'Collapse';
-            } else {
-                $(targetDiv).slideUp();
-                this[toggleText] = 'Thought process...';
-            }
-        },
-        loadMore() {
-            this.showCount += 4;
-        },
-        toggleResults() {
-            if (this.allResultsShown) {
-              this.showCount = 4;
-              this.allResultsShown = false;
-            } else {
-              this.showCount = this.hits_data[this.current_hit_id].search_results.length;
-              this.allResultsShown = true;
-            }
-        },
-        addLinkInput() {
-            this.referenceLinks.push({id: this.nextLinkId++, value: ''});
-        },
-        removeLinkInput(idToRemove) {
-            this.referenceLinks = this.referenceLinks.filter(linkObj => linkObj.id !== idToRemove);
-        },
-        saveAnnotations() {
+        cacheAnnotations() {
             // Initialize the annotations dictionary if it doesn't exist
-            if (!this.hits_data[this.current_hit_id].annotations) {
-                this.$set(this.hits_data[this.current_hit_id], 'annotations', {});
+            if (!this.hits_data[this.current_hit].annotations) {
+                this.$set(this.hits_data[this.current_hit], 'annotations', {});
             }
-    
-            // Populate the annotations dictionary with the form data
-            const annotations = {
-                googleQueryAnswer: this.googleQueryAnswer,
-                correctedQuery: this.correctedQuery,
-                aiEstimation: this.aiEstimation,
-                finalEstimation: this.finalEstimation,
-                estConfidence: this.estConfidence,
-                referenceLinks: this.referenceLinks,
-                briefExplanation: this.briefExplanation,
-            };
-            
-            this.hits_data[this.current_hit_id].annotations = annotations;
-
-            this.showCheckmark = true;
-            setTimeout(() => {
-            this.showCheckmark = false;
-            }, 2000); // 2000ms matches the animation duration
 
             let urlParams = new URLSearchParams(window.location.search);
             let data_path = urlParams.get('data');
             let annotator_name = urlParams.get('name')
 
-            localStorage.setItem(`hits_data_${data_path}_${annotator_name}`, JSON.stringify(this.hits_data));
+            localStorage.setItem(`importance_data_${data_path}_${annotator_name}`, JSON.stringify(this.hits_data));
         },
         go_to_hit(hit_num) {
+            console.log(this.hits_data[this.current_hit])
             if (hit_num > this.total_hits - 1) {
                 hit_num = this.total_hits - 1;
             } else if (hit_num < 0) {
@@ -119,36 +39,22 @@ const app = Vue.createApp({
             this.current_hit = hit_num;
 
             // Load annotations for the current hit
-            const annotations = this.hits_data[this.current_hit_id].annotations;
+            const annotations = this.hits_data[this.current_hit].annotations;
 
-            this.googleQueryAnswer = annotations.googleQueryAnswer || null;
-            this.correctedQuery = annotations.correctedQuery || null;
-            this.aiEstimation = annotations.aiEstimation || null;
-            this.finalEstimation = annotations.finalEstimation || null;
-            this.estConfidence = annotations.estConfidence || null;
-            this.referenceLinks = annotations.referenceLinks || [];
-            this.briefExplanation = annotations.briefExplanation || '';
+            this.bookmarked = annotations.bookmarked || false;
+            this.importance = annotations.importance || "";
+            this.question = annotations.question || "";
         },
         go_to_hit_circle(hit_num, event) {
             this.go_to_hit(hit_num);
         },
         refreshVariables() {
-            this.total_hits = Object.keys(this.hits_data).length;
-            this.hits_ids = Object.keys(this.hits_data);
-            // hits_ids to int
-            this.hits_ids = this.hits_ids.map(Number);
-            // sort hits_ids from low to high
-            this.hits_ids.sort(function(a, b){return a-b});
             this.current_hit = 0;
     
-            const annotations = this.hits_data[this.current_hit_id].annotations || {};
-            this.googleQueryAnswer = annotations.googleQueryAnswer || null;
-            this.correctedQuery = annotations.correctedQuery || null;
-            this.aiEstimation = annotations.aiEstimation || null;
-            this.finalEstimation = annotations.finalEstimation || null;
-            this.estConfidence = annotations.estConfidence || null;
-            this.referenceLinks = annotations.referenceLinks || [];
-            this.briefExplanation = annotations.briefExplanation || '';
+            const annotations = this.hits_data[this.current_hit].annotations || {};
+            this.bookmarked = annotations.bookmarked || false;
+            this.importance = annotations.importance || "";
+            this.question = annotations.question || "";
         },
         handle_file_upload(event) {
             const file = event.target.files[0];
@@ -166,7 +72,7 @@ const app = Vue.createApp({
                         let data_path = urlParams.get('data');
         
                         // Reset the cache with the new hits_data
-                        localStorage.setItem(`hits_data_${data_path}_${annotator_name}`, JSON.stringify(this.hits_data));
+                        localStorage.setItem(`importance_data_${data_path}_${annotator_name}`, JSON.stringify(this.hits_data));
                         
                         this.refreshVariables();  // Refresh other variables
                     } catch (error) {
@@ -183,9 +89,8 @@ const app = Vue.createApp({
             let annotator_name = urlParams.get('name')
 
             // remove .json
-            const filename = `${data_path}_${annotator_name}_annotations.json`;
+            const filename = `${data_path}_${annotator_name}_importance_annotations.json`;
             
-            console.log(this.hits_data[this.current_hit_id].annotations)
             const blob = new Blob([JSON.stringify(this.hits_data, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
     
@@ -196,99 +101,152 @@ const app = Vue.createApp({
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        },        
+        },
+        circleClass(hit_num) {
+            const annotations = this.hits_data[hit_num]?.annotations || {};
+            let classes = [];
+            if (hit_num === this.current_hit) {
+                classes.push('black-border');
+            }
+            if (annotations.bookmarked) {
+                classes.push('bg-red');
+            } else if (annotations.importance) {
+                classes.push('bg-green');
+            }
+            return classes.join(' ');
+        },
+    },
+    watch: {
+        importance: function(newImportance) {
+            if (this.hits_data[this.current_hit]?.annotations) {
+                this.hits_data[this.current_hit].annotations.importance = newImportance;
+            }
+        },
+        question: function(newQuestion) {
+            if (this.hits_data[this.current_hit]?.annotations) {
+                this.hits_data[this.current_hit].annotations.question = newQuestion;
+            }
+        },
+        hits_data: {
+            deep: true,
+            handler() {
+                this.cacheAnnotations();
+            }
+        },
     },
     created: function () {
         let urlParams = new URLSearchParams(window.location.search);
         let data_path = urlParams.get('data');
         let annotator_name = urlParams.get('name')
 
-        // Try loading hits_data from localStorage first
-        let cachedData = localStorage.getItem(`hits_data_${data_path}_${annotator_name}`);
+        // Try loading importance from localStorage first
+        let cachedData = localStorage.getItem(`importance_data_${data_path}_${annotator_name}`);
         if (cachedData) {
             this.hits_data = JSON.parse(cachedData);
             this.refreshVariables();
             return;
         }
 
-        fetch(`https://raw.githubusercontent.com/Yao-Dou/k-a-ann/main/data/${data_path}/${annotator_name}.json`)
+        fetch(`https://raw.githubusercontent.com/Yao-Dou/importance_rating/main/data/${data_path}/${annotator_name}.json`)
             .then(r => r.json())
             .then(json => {
-
-                // Step 1: Get the keys and convert them to an array
-                let keys = Object.keys(json);
-
-                // Step 2: Sort the keys as integers
-                keys.sort((a, b) => parseInt(a) - parseInt(b));
-
-                // Step 3: Get the first 50 keys
-                let first50Keys = keys.slice(0, 50);
-
-                // Step 4: Create a new JSON object with these 50 keys
-                let first50Json = {};
-                for (let key of first50Keys) {
-                    first50Json[key] = json[key];
-                }
-
-                this.hits_data = first50Json;
+                this.hits_data = json
                 
-                for (const [i, hit] of Object.entries(this.hits_data)) {
+                for (const hit of this.hits_data) {
                     if (hit.annotations === undefined) {
                         hit.annotations = {
-                            googleQueryAnswer: null,
-                            correctedQuery: null,
-                            aiEstimation: null,
-                            finalEstimation: null,
-                            estConfidence: null,
-                            referenceLinks: [],
-                            briefExplanation: '',
+                            bookmarked: false,
+                            importance: "",
+                            question: "",
                         }
                     }
                 }
 
-                localStorage.setItem(`hits_data_${data_path}_${annotator_name}`, JSON.stringify(this.hits_data));
+                localStorage.setItem(`importance_data_${data_path}_${annotator_name}`, JSON.stringify(this.hits_data));
                 this.refreshVariables(); // Refresh other variables
             });
     },
     mounted: function () {
     },
     computed: {
-        slicedResults() {
-          return this.hits_data[this.current_hit_id].search_results.slice(0, this.showCount);
+        isCurrentHitBookmarked() {
+            return this.hits_data[this.current_hit]?.annotations?.bookmarked || false;
         },
-        showMoreButton() {
-            return this.hits_data[this.current_hit_id].search_results.length > 4;
+        total_hits() {
+            return this.hits_data.length;
         },
-        buttonText() {
-            return this.allResultsShown ? "Show Less" : "Load More";
+        type() {
+            if (!this.hits_data[this.current_hit]) {
+                return 'Loading...'; // or return whatever makes sense in your context
+            }
+            if (this.hits_data[this.current_hit].type == "title") {
+                return "post title"
+            } else if (this.hits_data[this.current_hit].type == "post") {
+                return "post selftext"
+            } else {
+                return "comment"
+            }
         },
-        current_hit_id() {
-            return this.hits_ids[this.current_hit];
+        title() {
+            if (!this.hits_data[this.current_hit]) {
+                return 'Loading...'; // or return whatever makes sense in your context
+            }
+            if (this.hits_data[this.current_hit].type == "title") {
+                const title = this.hits_data[this.current_hit].title;
+                const local_start = this.hits_data[this.current_hit].local_start;
+                const local_end = this.hits_data[this.current_hit].local_end;
+                return title.slice(0, local_start) + 
+                       '<span class="green">' + 
+                       title.slice(local_start, local_end) + 
+                       '</span>' + 
+                       title.slice(local_end);
+            } else {
+                return this.hits_data[this.current_hit].title;
+            }
         },
-        chatgpt_answer() {
-            if (this.hits_data[this.current_hit_id].search_results) {
-                let snippet_answer = this.hits_data[this.current_hit_id].snippet_answer
-                if ("not_possible" in snippet_answer) {
-                    return "No answer found from the snippets."
-                } else {
-                    if ("answer" in snippet_answer) {
-                        return snippet_answer["answer"]
-                    } else {
-                        return "No answer found from the snippets."
-                    }
+        post() {
+            if (!this.hits_data[this.current_hit]) {
+                return 'Loading...'; // or return whatever makes sense in your context
+            }
+            if (this.hits_data[this.current_hit].type == "post") {
+                const post = this.hits_data[this.current_hit].post;
+                const local_start = this.hits_data[this.current_hit].local_start;
+                const local_end = this.hits_data[this.current_hit].local_end;
+                return post.slice(0, local_start) + 
+                       '<span class="green">' + 
+                       post.slice(local_start, local_end) + 
+                       '</span>' + 
+                       post.slice(local_end);
+            } else {
+                if (this.hits_data[this.current_hit].post == "") {
+                    return "&lt;empty&gt;";
                 }
-            } else {
-                return this.hits_data[this.current_hit_id].searchable_category
+                return this.hits_data[this.current_hit].post;
             }
         },
-        references() {
-            let snippet_answer = this.hits_data[this.current_hit_id].snippet_answer
-            if ("reference" in snippet_answer) {
-                return snippet_answer["reference"]
-            } else {
-                return []
+        parentComment() {
+            if (!this.hits_data[this.current_hit]) {
+                return 'Loading...'; // or return whatever makes sense in your context
             }
-        }
+            return this.hits_data[this.current_hit].parent_comment;
+        },
+        comment() {
+            if (!this.hits_data[this.current_hit]) {
+                return 'Loading...'; // or return whatever makes sense in your context
+            }
+            if (this.hits_data[this.current_hit].type == "comment") {
+                const comment = this.hits_data[this.current_hit].comment;
+                const local_start = this.hits_data[this.current_hit].local_start;
+                const local_end = this.hits_data[this.current_hit].local_end;
+                return comment.slice(0, local_start) + 
+                       '<span class="green">' + 
+                       comment.slice(local_start, local_end) + 
+                       '</span>' + 
+                       comment.slice(local_end);
+            } else {
+                return this.hits_data[this.current_hit].comment;
+            }
+        },
     },
 })
 

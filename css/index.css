@@ -58,7 +58,12 @@
 
 .comfortaa {
     font-family: 'Comfortaa', sans-serif;
-    font-size: 17px;
+    font-size: 18px;
+}
+
+.letter_spacing_01 {
+    letter-spacing: 0.03em;
+    font-weight: 300;
 }
 
 .w-13 {
@@ -312,7 +317,7 @@ margin: 5px 0;
     position: absolute;
     z-index: 1;
     bottom: 100%;
-    left: -15%;
+    left: -7.5%;
     /* margin-left: -60px; */
     /* Fade in tooltip - takes 1 second to go from 0% to 100% opac: */
     opacity: 0;
@@ -321,14 +326,19 @@ margin: 5px 0;
 
 .circle {
     border-radius: 50%;
-    border: 0.9px solid #DDDDDD;
-    width: 10px;
-    height: 10px;
+    border: 1.3px solid #DDDDDD;
+    width: 12px;
+    height: 12px;
     display: inline-block;
     margin-right: 0.5rem;
-    background-color: #DDDDDD;
+    /* background-color: #DDDDDD; */
     transition: all 0.2s ease-in-out;
     position: relative;
+}
+
+.circle.black-border {
+    transform: scale(1.15); 
+    border: 1.1px solid black !important;
 }
 
 .circle:hover { 
@@ -340,39 +350,6 @@ margin: 5px 0;
     visibility: visible;
     opacity: 1;
   }
-
-.circle-active {
-    border: 1.1px solid black !important;
-    transform: scale(1.15); 
-}
-
-.circle-bookmark {
-    background-color: rgb(255, 82, 82);
-    border-color: rgb(255, 82, 82);
-}
-
-.circle-finished {
-    background-color: rgb(31, 227, 41);
-    border-color: rgb(31, 227, 41);
-}
-
-
-.tooltiptext-bookmark {
-    color:rgb(255, 82, 82)
-}
-
-.tooltiptext-finished {
-    color:rgb(31, 227, 41)
-}
-
-.bookmark {
-    transition: all 0.2s ease-in-out;
-}
-
-.bookmark-active {
-    color:rgb(255, 82, 82);
-    background-color: rgb(255, 82, 82)
-}
 
 
 #response_box {
@@ -428,4 +405,15 @@ span.middleside {
 
 .lh-paras-2 {
     line-height: 2;
+}
+
+.styled-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 18px;
+    resize: vertical; /* Allow the user to resize vertically */
 }
