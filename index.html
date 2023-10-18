@@ -106,15 +106,21 @@
                     Rate the importance of <span class="comfortaa">Disclosure span in the {{ type }}</span> within the context into the following three levels:
                     <div class="radio-item mt1">
                         <input type="radio" id="low" name="level" value="low" v-model="importance">
-                        <label for="low"><span class="comfortaa light-red">Low:</span> can be removed without compromising the understanding of the commenter's perspective and context.</label>
+                        <label for="low"><span class="comfortaa light-red">Low:</span> can be removed without compromising the understanding of the 
+                            <span v-if="type === 'post title' || type === 'post selftext'">poster's</span>
+                            <span v-else-if="type === 'comment'">commenter's</span> perspective and context.</label>
                     </div>
                     <div class="radio-item">
                         <input type="radio" id="moderate" name="level" value="moderate" v-model="importance">
-                        <label for="moderate"><span class="comfortaa red">Moderate:</span> adds a meaningful layer to the context but is not essential to the commenter's overall message. The disclosure can be generalized.</label>
+                        <label for="moderate"><span class="comfortaa red">Moderate:</span> adds a meaningful layer to the context but is not essential to the 
+                            <span v-if="type === 'post title' || type === 'post selftext'">poster's</span>
+                            <span v-else-if="type === 'comment'">commenter's</span> overall message. The disclosure can be generalized.</label>
                     </div>
                     <div class="radio-item">
                         <input type="radio" id="high" name="level" value="high" v-model="importance">
-                        <label for="high"><span class="comfortaa dark-red">High:</span> essential for an accurate understanding of the commenter's perspective and context, should be kept as is.</label>
+                        <label for="high"><span class="comfortaa dark-red">High:</span> essential for an accurate understanding of the 
+                            <span v-if="type === 'post title' || type === 'post selftext'">poster's</span>
+                            <span v-else-if="type === 'comment'">commenter's</span> perspective and context, should be kept as is.</label>
                     </div>                    
                 </div>
                 <div class="ph3 pv1 f4">
