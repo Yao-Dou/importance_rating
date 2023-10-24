@@ -12,7 +12,7 @@ const app = Vue.createApp({
     methods: {
         bookmark_this_hit() {
             if (!this.hits_data[this.current_hit].annotations) {
-                this.$set(this.hits_data[this.current_hit], 'annotations', {});
+                this.hits_data[this.current_hit].annotations = {};
             }
             const isBookmarked = this.hits_data[this.current_hit].annotations.bookmarked || false;
             this.hits_data[this.current_hit].annotations.bookmarked = !isBookmarked;
@@ -20,7 +20,7 @@ const app = Vue.createApp({
         cacheAnnotations() {
             // Initialize the annotations dictionary if it doesn't exist
             if (!this.hits_data[this.current_hit].annotations) {
-                this.$set(this.hits_data[this.current_hit], 'annotations', {});
+                this.hits_data[this.current_hit].annotations = {};
             }
 
             let urlParams = new URLSearchParams(window.location.search);
